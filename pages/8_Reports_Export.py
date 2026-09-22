@@ -3,7 +3,7 @@ import json
 import streamlit as st
 
 from database.database import get_session
-from database.models import Location
+from database.models import Location, Project
 from services.demo_service import get_average_speed
 from services.distance_service import build_distance_matrix
 from services.report_service import (
@@ -31,10 +31,7 @@ try:
         st.info("Start a demo or select a scenario before using Reports & Export.")
         st.stop()
 
-    project = session.get(type("ProjectRef", (), {}), scenario_id)
-    if project is None:
-        from database.models import Project
-        project = session.get(Project, scenario_id)
+    project = session.get(Project, scenario_id)
     if project is None:
         st.error("The selected scenario no longer exists.")
         st.stop()
@@ -136,6 +133,7 @@ try:
             st.success(f"Imported “{imported.name}” as a new scenario.")
             st.rerun()
         except (UnicodeDecodeError, json.JSONDecodeError, ValueError, KeyError, TypeError) as exc:
+            session.rollback()
             st.error(f"Import failed: {exc}")
 
     st.divider()
