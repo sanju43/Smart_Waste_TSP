@@ -67,7 +67,8 @@ def test_result_metrics():
     m = matrix({0:(0,0),1:(3,4),2:(6,4)})
     route = [0,1,2,0]
     metrics = route_metrics(route, m, average_speed=30)
-    assert metrics["total_distance"] == pytest.approx(13.0)
+    expected_distance = m[0][1] + m[1][2] + m[2][0]
+    assert metrics["total_distance"] == pytest.approx(expected_distance)
     assert metrics["stops"] == 2
     comparison = compare([0,2,1,0], route, m)
     assert comparison["improved"] <= comparison["baseline"]
