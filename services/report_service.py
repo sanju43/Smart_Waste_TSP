@@ -114,7 +114,7 @@ def validate_scenario_payload(payload):
 
 def import_scenario(session, payload, name_override=None):
     """Import a versioned snapshot as a new scenario and remap database ids."""
-    from database.models import DistanceMatrix, Location, Project, Route, RoutePoint
+    from database.models import DistanceMatrix, Location, Project, Route, RoutePoint, Setting
 
     validate_scenario_payload(payload)
 
