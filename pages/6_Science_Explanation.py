@@ -31,7 +31,7 @@ st.write(
 st.header("4. How the optimizer works")
 steps = [
     ("Step 1 — Input", "Set one depot and collection points with X/Y coordinates."),
-    ("Step 2 — Distance matrix", "Calculate the pairwise distance between every location."),
+    ("Step 2 — Distance matrix", "Build the distance matrix by calculating the pairwise distance between every location."),
     ("Step 3 — Baseline", "Use the input order as a reference route."),
     ("Step 4 — Nearest Neighbor", "From the current location, choose the nearest unvisited point."),
     ("Step 5 — 2-opt", "Try reversing route segments and keep changes that reduce total distance."),
