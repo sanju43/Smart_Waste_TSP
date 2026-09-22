@@ -1,0 +1,11 @@
+import streamlit as st
+st.title("Science Explanation")
+st.header("Problem")
+st.write("A waste vehicle may need to visit many collection points. Different visit orders can produce different total travel distances.")
+st.header("Principle: Traveling Salesman Problem")
+st.write("TSP models a route that visits each collection point once and returns to the starting depot while minimizing total distance.")
+st.header("Our model")
+st.write("The exhibition demo uses a synthetic X/Y coordinate grid instead of live city roads. This keeps the model deterministic and fully offline.")
+st.header("Algorithm")
+st.markdown("1. Build the distance matrix.\n2. Create a baseline route.\n3. Use Nearest Neighbor for an initial route.\n4. Improve it using 2-opt.\n5. Compare distances and estimated time.")
+st.warning("Nearest Neighbor + 2-opt is a heuristic and is not guaranteed to be the global shortest route. Exact mode is limited to small datasets.")
