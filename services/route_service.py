@@ -10,13 +10,14 @@ def save_distance_matrix(session, project_id, locations, matrix):
                 to_location_id=target.id,
                 distance=float(matrix[source.id][target.id]),
             ))
+    session.commit()
 
 def load_distance_matrix(session, project_id):
     rows = session.query(DistanceMatrix).filter_by(project_id=project_id).all()
-    return {row.from_location_id: {} for row in rows} if not rows else {
-        source: {r.to_location_id: r.distance for r in rows if r.from_location_id == source}
-        for source in {r.from_location_id for r in rows}
-    }
+    matrix = {}
+    for row in rows:
+        matrix.setdefault(row.from_location_id, {})[row.to_location_id] = row.distance
+    return matrix
 
 def save_route(session, project_id, route, algorithm, matrix, average_speed=30.0):
     old = session.query(Route).filter_by(project_id=project_id, status="completed").all()
