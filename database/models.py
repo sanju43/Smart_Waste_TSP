@@ -12,6 +12,8 @@ class Project(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     locations: Mapped[list["Location"]] = relationship(back_populates="project", cascade="all, delete-orphan")
+    routes: Mapped[list["Route"]] = relationship(back_populates="project", cascade="all, delete-orphan")
+    distance_matrices: Mapped[list["DistanceMatrix"]] = relationship(back_populates="project", cascade="all, delete-orphan")
 
 class Location(Base):
     __tablename__ = "locations"
@@ -41,6 +43,7 @@ class Route(Base):
     total_stops: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String(30), default="completed")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    project: Mapped[Project] = relationship(back_populates="routes")
     points: Mapped[list["RoutePoint"]] = relationship(back_populates="route", cascade="all, delete-orphan")
 
 class RoutePoint(Base):
@@ -60,6 +63,7 @@ class DistanceMatrix(Base):
     from_location_id: Mapped[int] = mapped_column(Integer)
     to_location_id: Mapped[int] = mapped_column(Integer)
     distance: Mapped[float] = mapped_column(Float)
+    project: Mapped[Project] = relationship(back_populates="distance_matrices")
 
 class DemoDataset(Base):
     __tablename__ = "demo_datasets"
