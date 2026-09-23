@@ -61,14 +61,19 @@ def load_demo_scenario(session, reset=True):
 
     if reset:
         session.query(Location).filter_by(project_id=project.id).delete()
-        session.query(Setting).filter_by(key="average_speed_kmh").first()
         for route in project.routes:
             route.status = "invalidated"
         for matrix in list(project.distance_matrices):
             session.delete(matrix)
+        session.flush()
 
     payload = json.loads(dataset.payload)
+    if not isinstance(payload, list) or not payload:
+        raise ValueError("Exhibition Demo dataset is empty or invalid.")
+
     for item in payload:
+        if item.get("type") not in {"Depot", "Collection"}:
+            raise ValueError("Exhibition Demo contains an invalid location type.")
         session.add(Location(project_id=project.id, **item))
 
     session.commit()
