@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+import math
 from datetime import datetime, timezone
 from html import escape
 
@@ -104,10 +105,69 @@ def validate_scenario_payload(payload):
     if len(depots) > 1:
         raise ValueError("Scenario export contains more than one active depot.")
 
+    active_ids = {
+        int(item["id"])
+        for item in locations
+        if item.get("is_active", True)
+    }
+    matrix = payload.get("distance_matrix", [])
+    if not isinstance(matrix, list):
+        raise ValueError("distance_matrix must be a list.")
+    for item in matrix:
+        if not isinstance(item, dict):
+            raise ValueError("Every distance-matrix entry must be an object.")
+        try:
+            source = int(item["from_location_id"])
+            target = int(item["to_location_id"])
+            distance = float(item["distance"])
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError("Distance-matrix entries must contain numeric location ids and distance.") from exc
+        if source not in active_ids or target not in active_ids:
+            raise ValueError("Distance matrix references an unknown or inactive location.")
+        if not math.isfinite(distance) or distance < 0:
+            raise ValueError("Distance matrix distances must be finite and non-negative.")
+
     route = payload.get("route")
     if route is not None:
         if not isinstance(route, dict) or not isinstance(route.get("points"), list):
             raise ValueError("Exported route must contain a points list.")
+        points = route["points"]
+        if not points:
+            raise ValueError("Exported route points cannot be empty.")
+        route_ids = []
+        sequences = []
+        for point in points:
+            if not isinstance(point, dict):
+                raise ValueError("Every exported route point must be an object.")
+            try:
+                location_id = int(point["location_id"])
+                sequence_no = int(point["sequence_no"])
+            except (KeyError, TypeError, ValueError) as exc:
+                raise ValueError("Route points must contain numeric location_id and sequence_no.") from exc
+            if location_id not in active_ids:
+                raise ValueError("Exported route references an unknown or inactive location.")
+            route_ids.append(location_id)
+            sequences.append(sequence_no)
+        if len(route_ids) < 3 or route_ids[0] != route_ids[-1]:
+            raise ValueError("Exported route must contain a closed depot-to-depot sequence.")
+        if len(route_ids[1:-1]) != len(set(route_ids[1:-1])):
+            raise ValueError("Exported route contains duplicate collection points.")
+        if len(sequences) != len(set(sequences)) or sorted(sequences) != list(range(1, len(sequences) + 1)):
+            raise ValueError("Exported route sequence numbers must be consecutive starting at 1.")
+        depot_ids = [
+            int(item["id"])
+            for item in locations
+            if item.get("is_active", True) and item.get("type") == "Depot"
+        ]
+        if len(depot_ids) != 1 or route_ids[0] != depot_ids[0]:
+            raise ValueError("Exported route must start and end at the active depot.")
+        collection_ids = {
+            int(item["id"])
+            for item in locations
+            if item.get("is_active", True) and item.get("type") == "Collection"
+        }
+        if set(route_ids[1:-1]) != collection_ids:
+            raise ValueError("Exported route must visit every active collection point exactly once.")
 
     return payload
 
