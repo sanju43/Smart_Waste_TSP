@@ -50,7 +50,7 @@ def test_streamlit_app_starts_and_health_endpoint_is_ready():
                 with urlopen(health_url, timeout=1) as response:
                     body = response.read().decode("utf-8", errors="replace")
                 assert response.status == 200
-                assert '"status": "ok"' in body or '"status":"ok"' in body
+                assert body.strip().lower() == "ok"
                 return
             except (URLError, OSError, AssertionError):
                 time.sleep(0.25)
