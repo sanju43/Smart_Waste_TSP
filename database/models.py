@@ -29,7 +29,7 @@ class Location(Base):
     priority: Mapped[int] = mapped_column(Integer, default=1)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=lambda: datetime.now(timezone.utc))
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
     project: Mapped[Project] = relationship(back_populates="locations")
 
 class Route(Base):
@@ -42,7 +42,7 @@ class Route(Base):
     estimated_minutes: Mapped[float] = mapped_column(Float, default=0)
     total_stops: Mapped[int] = mapped_column(Integer, default=0)
     status: Mapped[str] = mapped_column(String(30), default="completed")
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     project: Mapped[Project] = relationship(back_populates="routes")
     points: Mapped[list["RoutePoint"]] = relationship(back_populates="route", cascade="all, delete-orphan")
 
