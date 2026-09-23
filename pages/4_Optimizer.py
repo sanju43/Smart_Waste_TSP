@@ -69,7 +69,7 @@ try:
             st.session_state.update({
                 "route": route, "baseline": baseline, "metrics": metrics,
                 "comparison": comparison, "algorithm": alg,
-                "locations": loc, "route_id": saved.id, "scenario_id": p.id
+                "route_id": saved.id, "scenario_id": p.id
             })
             st.success(f"Route saved to SQLite (Route #{saved.id}).")
         except (ValueError, KeyError) as exc:
@@ -78,7 +78,18 @@ try:
 
     if "route" in st.session_state and st.session_state.get("scenario_id") == p.id:
         st.success(f"Algorithm: {st.session_state['algorithm']}")
-        st.plotly_chart(route_figure(st.session_state["locations"], st.session_state["route"]), use_container_width=True)
+        # Re-query ORM objects in the current session instead of retaining detached
+        # Location instances across Streamlit reruns.
+        current_locations = (
+            s.query(Location)
+            .filter_by(project_id=p.id, is_active=True)
+            .order_by(Location.id)
+            .all()
+        )
+        st.plotly_chart(
+            route_figure(current_locations, st.session_state["route"]),
+            use_container_width=True,
+        )
         st.write("Route:", " → ".join(str(i) for i in st.session_state["route"]))
 finally:
     s.close()
