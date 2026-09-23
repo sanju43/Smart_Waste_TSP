@@ -66,7 +66,11 @@ try:
         active = s.query(Location).filter_by(project_id=project.project_id, is_active=True).order_by(Location.id).all()
         st.metric("Active locations", len(active))
         st.caption(f"Scenario: {s.get(type(project.project_id), project.project_id) if False else project.project_id}")
-        st.plotly_chart(route_figure(active, st.session_state["route"]), use_container_width=True) if st.session_state.get("route") else None
+        if st.session_state.get("route"):
+        st.plotly_chart(
+            route_figure(active, st.session_state["route"]),
+            use_container_width=True,
+        )
     else:
         st.info("Click Start Demo or create a scenario to begin.")
 finally:
