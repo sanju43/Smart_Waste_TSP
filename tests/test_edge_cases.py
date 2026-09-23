@@ -100,3 +100,21 @@ def test_save_route_rejects_too_short_route():
     with pytest.raises(ValueError, match="requires a depot"):
         save_route(s, p.id, [1, 1], "Test", {1: {1: 0}}, 30)
     s.close()
+
+
+
+def test_full_exhibition_acceptance_flow():
+    from services.acceptance_service import run_full_acceptance
+    s = session_factory()
+    try:
+        checks = run_full_acceptance(s)
+        assert checks
+        assert all(check.status == "PASS" for check in checks), [
+            (check.label, check.message) for check in checks if check.status != "PASS"
+        ]
+        assert {check.key for check in checks} >= {
+            "demo_flow", "distance_matrix", "heuristic", "exact", "persistence",
+            "animation", "presentation", "export", "results",
+        }
+    finally:
+        s.close()
