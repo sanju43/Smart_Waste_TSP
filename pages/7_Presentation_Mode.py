@@ -73,7 +73,6 @@ try:
                 "metrics": metrics,
                 "comparison": comparison,
                 "algorithm": algorithm,
-                "locations": locations,
                 "route_id": saved.id,
             }
         )
@@ -139,8 +138,14 @@ try:
 
     comparison = st.session_state["comparison"]
     metrics = st.session_state["metrics"]
-    locations = st.session_state["locations"]
+    scenario_id = st.session_state.get("scenario_id")
     route = st.session_state["route"]
+    locations = (
+        session.query(Location)
+        .filter_by(project_id=scenario_id, is_active=True)
+        .order_by(Location.id)
+        .all()
+    ) if scenario_id else []
 
     st.divider()
     m1, m2, m3, m4 = st.columns(4)
