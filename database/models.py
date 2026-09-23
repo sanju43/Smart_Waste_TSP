@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timezone
 from sqlalchemy import Boolean, DateTime, Float, ForeignKey, Integer, String, Text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -10,7 +10,7 @@ class Project(Base):
     id: Mapped[int] = mapped_column(Integer, primary_key=True)
     name: Mapped[str] = mapped_column(String(200))
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
-    created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
+    created_at: Mapped[datetime] = mapped_column(DateTime, default=lambda: datetime.now(timezone.utc))
     locations: Mapped[list["Location"]] = relationship(back_populates="project", cascade="all, delete-orphan")
     routes: Mapped[list["Route"]] = relationship(back_populates="project", cascade="all, delete-orphan")
     distance_matrices: Mapped[list["DistanceMatrix"]] = relationship(back_populates="project", cascade="all, delete-orphan")
@@ -29,7 +29,7 @@ class Location(Base):
     priority: Mapped[int] = mapped_column(Integer, default=1)
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=lambda: datetime.now(timezone.utc))
     project: Mapped[Project] = relationship(back_populates="locations")
 
 class Route(Base):
