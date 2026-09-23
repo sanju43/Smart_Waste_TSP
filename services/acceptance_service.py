@@ -11,6 +11,7 @@ from services.presentation_service import get_presentation_steps
 from services.report_service import (
     build_scenario_payload,
     dumps_scenario,
+    import_scenario,
     validate_scenario_payload,
 )
 from services.result_service import compare, route_metrics
@@ -183,6 +184,39 @@ def run_full_acceptance(session):
         ))
     except Exception as exc:
         checks.append(_fail("export", "Scenario export", exc))
+
+    try:
+        imported_payload = validate_scenario_payload(payload)
+        imported = import_scenario(session, imported_payload, name_override="Acceptance Import")
+        imported_locations = (
+            session.query(Location)
+            .filter_by(project_id=imported.id, is_active=True)
+            .order_by(Location.id)
+            .all()
+        )
+        if len(imported_locations) != len(locations):
+            raise ValueError(
+                f"Imported scenario has {len(imported_locations)} locations; expected {len(locations)}."
+            )
+        imported_route = latest_route(session, imported.id)
+        if imported_route is None:
+            raise ValueError("Imported scenario did not restore the saved route.")
+        imported_matrix = load_distance_matrix(session, imported.id)
+        if not imported_matrix:
+            raise ValueError("Imported scenario did not restore the distance matrix.")
+        imported_ids = [
+            point.location_id
+            for point in sorted(imported_route.points, key=lambda item: item.sequence_no)
+        ]
+        imported_depot, imported_points = validate_locations(imported_locations)
+        validate_route(imported_ids, imported_depot.id, [point.id for point in imported_points])
+        checks.append(_pass(
+            "import",
+            "Scenario import round-trip",
+            f"Imported scenario #{imported.id} with {len(imported_locations)} locations and a valid saved route.",
+        ))
+    except Exception as exc:
+        checks.append(_fail("import", "Scenario import round-trip", exc))
 
     try:
         route = [
