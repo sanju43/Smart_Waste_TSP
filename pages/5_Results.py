@@ -17,7 +17,6 @@ session = get_session()
 try:
     scenario_id = st.session_state.get("scenario_id")
     route = st.session_state.get("route")
-    locations = st.session_state.get("locations")
 
     if scenario_id:
         locations = (
@@ -61,7 +60,7 @@ try:
     speed = get_average_speed(session)
     metrics = route_metrics(route, matrix, average_speed=speed)
     comparison = compare(baseline, route, matrix, average_speed=speed)
-    st.session_state.update({"metrics": metrics, "comparison": comparison, "locations": locations})
+    st.session_state.update({"metrics": metrics, "comparison": comparison})
 
     show_metrics(metrics, comparison)
 
