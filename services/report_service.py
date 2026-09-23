@@ -1,7 +1,7 @@
 import csv
 import io
 import json
-from datetime import datetime
+from datetime import datetime, timezone
 from html import escape
 
 
@@ -16,7 +16,7 @@ def build_scenario_payload(project, locations, route_row=None, matrix=None, aver
     """Build a JSON-safe, versioned snapshot of a scenario and optional saved route."""
     payload = {
         "schema_version": REPORT_SCHEMA_VERSION,
-        "exported_at": datetime.utcnow().isoformat(),
+        "exported_at": datetime.now(timezone.utc).isoformat(),
         "project": {
             "name": project.name,
             "description": project.description,
