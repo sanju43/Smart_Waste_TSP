@@ -40,7 +40,6 @@ try:
                 "metrics": metrics,
                 "comparison": comparison,
                 "algorithm": algorithm,
-                "locations": loc,
                 "route_id": saved.id,
             })
             st.success("Demo loaded and optimized. Open Results to see the route animation.")
@@ -48,7 +47,7 @@ try:
     with c2:
         if st.button("↺ Reset Demo", use_container_width=True):
             project = load_demo_scenario(s, reset=True)
-            for key in ("route", "baseline", "metrics", "comparison", "algorithm", "locations", "route_id"):
+            for key in ("route", "baseline", "metrics", "comparison", "algorithm", "route_id"):
                 st.session_state.pop(key, None)
             st.session_state["scenario_id"] = project.id
             st.success("Demo data reset to the original offline dataset.")
